@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Etch-A-Sketch Smooth</title>
+		<style type='text/css'>
+			canvas { border: 1px solid black; }
+		</style>
+	</head>
+	<body>
+		<canvas id='canvas' width='800' height='600'></canvas>
+		<script type='text/javascript'>
+		var ctx;
+
+		var left= false, right= false, up= false, down= false;
+
+		var player = { x: 50, y: 75, w: 120 , h: 130 };
+		var platform = { x: 0, y: 600, w: 800, h: 10 };
+
+		var MENU = 0, PLAY = 1, GAMEOVER = 2;
+		var timerID = -1;
+		
+		function
+
+		function updatePlay() {
+			var orig = { x: player.x, y: player.y };
+			
+			if (up)
+				player.y -= player.dy;
+			if (down)
+				player.y += player.dy;
+			if (left)
+				player.x -= player.dx;
+			if (right)
+				player.x += player.dx;
+				
+			for (var i=0; i<platform.length; i++) {
+				if (collide(player, platform[i])){
+					player.x = orig.x;
+					player.y = orig.y;
+				}
+			}
+			function drawPlay(ctx) {
+				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+				ctx.fillStyle="#000000";
+				ctx.fillRect(player.x, player.y, player.w, player,h);
+				ctx.fillStyle="#000000";
+				for (var i=0; i<platform.lengh; i++) {
+					//Need to you to fix this
+				}
+			}
+
+			//TEST
+			
+			if (player.x<0)
+				player.x=0;
+			else if (player.x + player.w  >ctx.canvas.width)
+				player.x = ctx.canvas.width-player.w;
+			if (player.y < 0)
+				player.y=0;
+			else if (player.y + player.h > ctx.canvas.height)
+				player.y = ctx.canvas.height - player.h;
+			}
+			
+			function collide(player, platform) {
+				if(player.x> platform.x + platform.w)
+					return false;
+				if (player.y > platform.y + platform.h)
+						return false;
+				if (platform.x > player.x + player.w)
+					return false;
+				if (platform.y > player.y + player.h ) 
+					return false;
+					
+				return true;
+			}
+
+			//TEST
+		</script>
+	</body>
+</html>
