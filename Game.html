@@ -9,13 +9,21 @@
 	</head>
 	<body>
 		<canvas id='canvas' width='800' height='600'></canvas>
+		<script type='text/javascript' src='raf.js'></script>
 		<script type='text/javascript'>
 			var ctx;
 			
 			var left= false, right= false, up= false, down= false;
 			
 			
-			var player = { x: 50, y: 75, w: 120 , h: 130, dx: 2, dy: 2 };
+			var player = { x: 50, y: 75, w: 60 , h: 65, dx: 2, dy: 2 };
+
+			var count = 0;
+			var spriteX;
+			var spriteY;
+
+			var waitTime = 100;
+			var lastTime = 0;
 			
 			var lives = 5;
 			var platform = { x: 40, y: 500, w: 50, h: 10 };
@@ -26,9 +34,6 @@
 			
 			var mouse = { x: 0, y: 0, clicked: false };
 			var playButton = {};
-			
-			var waitTime = 0;
-			var lastTime = 0;
 			
 			(function() {
 				var resourceCache = {};
@@ -140,6 +145,7 @@
 				document.addEventListener('drag', getClick);
 				document.addEventListener('keydown', handleKeyDown);
 				document.addEventListener('keyup', handleKeyUp);
+				init();
 				changeState(MENU);
 			}
 
@@ -151,8 +157,8 @@
 				playButton.y = ctx.canvas.height/2 - 50;
 				playButton.w = 200;
 				playButton.h = 100;
-				
 				terrainPattern = ctx.createPattern(resources.get('wood.jpg'), "repeat");
+
 			}
 			
 			function changeState( newState ) {
@@ -163,6 +169,7 @@
 				else if ( newState === PLAY ) {
 					reset();
 					timerID = setInterval(function() { updatePlay(); drawPlay(ctx); }, 1000/60);
+					sprite();
 				}
 				else if ( newState === GAMEOVER ) {
 					waitTime = 2000;
@@ -235,15 +242,42 @@
 					
 				return true;
 			}
+			var spriteLastTime = 0;
+			var spriteElapsed;
+			var spriteWait = 100;
+			function sprite() {
+				requestAnimationFrame(sprite);
+
+				spriteX = (count % 10) * 120;
+				spriteY = Math.floor(count / 10) * 115;
+
+				var curTime = new Date().getTime();
+				if(spriteLastTime == 0)
+					spriteLastTime = new Date().getTime();
+				spriteElapsed = curTime - spriteLastTime;
+				spriteWait -= spriteElapsed;
+				spriteLastTime = curTime;
+
+				if(count == 9)
+					count = 0;
+				else if ( spriteWait <= 0 && count != 9) {
+					count++;
+					spriteWait = 100;
+				}		
+			}
 				
 			function drawPlay(ctx) {
 				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-				ctx.fillStyle="#000000";
-				ctx.fillRect(player.x, player.y, player.w, player.h);
-				//ctx.fillStyle="#000000";
 				ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
+				if(left)
+					ctx.drawImage(resources.get('linkSheetRunLeft.png'), spriteX, spriteY, 120, 115, player.x, player.y, player.h, player.w);
+				else if(right)
+					ctx.drawImage(resources.get('linkSheetRunRight.png'), spriteX, spriteY, 120, 115, player.x, player.y, player.h, player.w);
+				else
+					ctx.drawImage(resources.get('linkSheetIdle.png'), 0, 0, 120, 115, player.x, player.y, player.h, player.w);
 			}
 			//******GAMEOVER******
+			var gameOverWait = 0;
 			function updateGameOver() {
 				var curTime = performance.now();
 				var elapsed = curTime - lastTime;
@@ -257,27 +291,13 @@
 				ctx.fillText("GAME OVER!", 200, 100);
 			}
 			
-			main();
-			
 			resources.load([
-				'linkSheet.png',
+				'linkSheetIdle.png',
+				'linkSheetRunLeft.png',
+				'linkSheetRunRight.png',
 				'wood.jpg'
 			]);
-			resources.onReady(init);
-
-			/*function SpriteSheet(path, frameWidth, frameHeight) { 
-				var image = new Image();
-				var framesPerRow;
-				
-				//calculate the number of frames in a row after the image loads
-				var self = this;
-				image.onload = function() {
-					framesPerRow = Math.floor(image.width/frameWidth);
-				};
-				
-				image.src = path;
-			}
-			*/
+			resources.onReady(main);
 		</script>
 	</body>
 </html>
