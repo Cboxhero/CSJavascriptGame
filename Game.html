@@ -16,7 +16,7 @@
 			var left= false, right= false, up= false, down= false;
 			
 			
-			var player = { x: 50, y: 75, w: 60 , h: 65, dx: 2, dy: 2 };
+			var player = { x: 50, y: 75, w: 60 , h: 65, dx: 5, dy: 5 };
 
 			var count = 0;
 			var spriteX;
@@ -258,12 +258,12 @@
 				spriteWait -= spriteElapsed;
 				spriteLastTime = curTime;
 
-				if(count == 9)
-					count = 0;
-				else if ( spriteWait <= 0 && count != 9) {
+				if ( spriteWait <= 0 && count != 9) {
 					count++;
 					spriteWait = 100;
-				}		
+				}
+				else if(count == 9)
+					count = 0;
 			}
 				
 			function drawPlay(ctx) {
