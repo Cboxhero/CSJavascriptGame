@@ -13,10 +13,10 @@
 		<script type='text/javascript'>
 			var ctx;
 			
-			var left= false, right= false, up= false, down= false;
+			var left = false, right = false, up = false, down = false, jump = false;
 			
 			
-			var player = { x: 50, y: 75, w: 60 , h: 65, dx: 5, dy: 5 };
+			var player = { x: 50, y: 75, w: 60 , h: 60, dx: 5, dy: 5 };
 
 			var count = 0;
 			var spriteX;
@@ -25,7 +25,16 @@
 			var waitTime = 100;
 			var lastTime = 0;
 			
+			var jumpSpeed = -20;
+			var gravity = 2;
+			var vy = 0;
+			// Bounce Factor is the force with which
+			// the ball should rebound. 1 means 100%
+			// 0.1 means 10%, so on ...
+			var bounceFactor = 0.8;
+
 			var lives = 5;
+
 			var platform = { x: 40, y: 500, w: 50, h: 10 };
 			
 			var MENU = 0, PLAY = 1, GAMEOVER = 2;
@@ -102,6 +111,7 @@
 			}
 
 			var KEY_UP = 87, KEY_DOWN = 83, KEY_LEFT = 65, KEY_RIGHT = 68;
+			var KEY_JUMP = 32;
 			//var altUP = 38, altDOWN = 40, altLEFT = 37, altRIGHT = 39;
 
 			function handleKeyDown(evt) {
@@ -131,6 +141,11 @@
 				if ( 37 <= evt.keyCode && evt.keyCode <= 40 )
 					evt.preventDefault();
 			}
+
+			function handleKeyPress(evt) {
+				if(evt.keyCode == KEY_JUMP)
+					jump = true;
+			}
 			
 			function getClick(e) {
 				var evt = e || window.event;
@@ -145,6 +160,7 @@
 				document.addEventListener('drag', getClick);
 				document.addEventListener('keydown', handleKeyDown);
 				document.addEventListener('keyup', handleKeyUp);
+				document.addEventListener('keypress', handleKeyPress);
 				init();
 				changeState(MENU);
 			}
@@ -203,19 +219,23 @@
 
 			//******PLAY******
 			function updatePlay() {
+
 				var orig = { x: player.x, y: player.y };
 				
-				if (up)
-					player.y -= player.dy;
-				if (down)
-					player.y += player.dy;
+				vy += gravity;
+				player.y += vy;
+
 				if (left)
 					player.x -= player.dx;
 				if (right)
 					player.x += player.dx;
+				if(jump) {
+					vy = jumpSpeed;
+					jump = false;
+				}
 				
 				
-				if (collide(player, platform)){
+				if (collide(player, platform)){ // Need to edit this
 					player.x = orig.x;
 					player.y = orig.y;
 				}
@@ -230,7 +250,7 @@
 					player.y = ctx.canvas.height - player.h;
 			}
 				
-			function collide(player, platform) {
+			function collide(player, platform) { // Edit this to know where you collide
 				if(player.x> platform.x + platform.w)
 					return false;
 				if (player.y > platform.y + platform.h)
