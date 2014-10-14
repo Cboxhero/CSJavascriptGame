@@ -17,6 +17,7 @@
 			
 			
 			var player = { x: 50, y: 75, w: 60 , h: 60, dx: 5, dy: 5 };
+			var platform = { x: 0, y: 550, w: 800, h: 50 };
 
 			var count = 0;
 			var spriteX;
@@ -29,13 +30,11 @@
 			var gravity = 2;
 			var vy = 0;
 			// Bounce Factor is the force with which
-			// the ball should rebound. 1 means 100%
+			// the object should rebound. 1 means 100%
 			// 0.1 means 10%, so on ...
 			var bounceFactor = 0.8;
 
 			var lives = 5;
-
-			var platform = { x: 40, y: 500, w: 50, h: 10 };
 			
 			var MENU = 0, PLAY = 1, GAMEOVER = 2;
 			var state = MENU;
@@ -43,6 +42,9 @@
 			
 			var mouse = { x: 0, y: 0, clicked: false };
 			var playButton = {};
+
+			var woodPattern;
+			var terrainPattern;
 			
 			(function() {
 				var resourceCache = {};
@@ -143,7 +145,7 @@
 			}
 
 			function handleKeyPress(evt) {
-				if(evt.keyCode == KEY_JUMP)
+				if(evt.keyCode == KEY_JUMP && collide(player, platform))
 					jump = true;
 			}
 			
@@ -173,8 +175,8 @@
 				playButton.y = ctx.canvas.height/2 - 50;
 				playButton.w = 200;
 				playButton.h = 100;
-				terrainPattern = ctx.createPattern(resources.get('wood.jpg'), "repeat");
-
+				woodPattern = ctx.createPattern(resources.get('wood.jpg'), "repeat");
+				terrainPattern = ctx.createPattern(resources.get('basic_ground.png'), "repeat");
 			}
 			
 			function changeState( newState ) {
@@ -210,7 +212,7 @@
 
 			function drawMenu(ctx) {
 				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-				ctx.fillStyle = terrainPattern;
+				ctx.fillStyle = woodPattern;
 				ctx.fillRect(0,0,canvas.width, canvas.height);
 				ctx.strokeRect(playButton.x, playButton.y, playButton.w, playButton.h);
 				ctx.fillStyle = "#000000";
@@ -219,11 +221,14 @@
 
 			//******PLAY******
 			function updatePlay() {
-
-				var orig = { x: player.x, y: player.y };
 				
-				vy += gravity;
-				player.y += vy;
+				//ground check
+				if (collide(player, platform)){ // Need to edit this
+					player.y = platform.y - 60;
+					vy = 0;
+				}
+				else
+					vy += gravity;
 
 				if (left)
 					player.x -= player.dx;
@@ -233,13 +238,9 @@
 					vy = jumpSpeed;
 					jump = false;
 				}
-				
-				
-				if (collide(player, platform)){ // Need to edit this
-					player.x = orig.x;
-					player.y = orig.y;
-				}
-				
+				//Has to be after the collide check and jump check
+				player.y += vy;
+
 				if (player.x<0)
 					player.x=0;
 				else if (player.x + player.w  >ctx.canvas.width)
@@ -250,7 +251,7 @@
 					player.y = ctx.canvas.height - player.h;
 			}
 				
-			function collide(player, platform) { // Edit this to know where you collide
+			function collide(player, platform) {
 				if(player.x> platform.x + platform.w)
 					return false;
 				if (player.y > platform.y + platform.h)
@@ -288,6 +289,7 @@
 				
 			function drawPlay(ctx) {
 				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+				ctx.fillStyle = terrainPattern;
 				ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
 				if(left)
 					ctx.drawImage(resources.get('linkSheetRunLeft.png'), spriteX, spriteY, 120, 115, player.x, player.y, player.h, player.w);
@@ -315,7 +317,8 @@
 				'linkSheetIdle.png',
 				'linkSheetRunLeft.png',
 				'linkSheetRunRight.png',
-				'wood.jpg'
+				'wood.jpg',
+				'basic_ground.png'
 			]);
 			resources.onReady(main);
 		</script>
