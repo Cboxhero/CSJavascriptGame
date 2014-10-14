@@ -16,8 +16,28 @@
 			var left = false, right = false, up = false, down = false, jump = false;
 			
 			
-			var player = { x: 50, y: 75, w: 60 , h: 60, dx: 5};
+			var player = { x: 50, y: 75, w: 60 , h: 60, velX: 0, velY: 0, speed: 5, jumping: false, grounded: false};
+			
 			var platform = { x: 0, y: 550, w: 800, h: 50 };
+			var platforms = [];
+			platforms.push({
+				x: 0,
+				y: 550,
+				w: 800,
+				h: 50
+			});
+			platforms.push({
+				x: 200,
+				y: 500,
+				w: 600,
+				h: 50
+			});
+			platforms.push({
+				x: 400,
+				y: 450,
+				w: 400,
+				h: 50
+			});
 
 			var count = 0;
 			var spriteX;
@@ -27,8 +47,8 @@
 			var lastTime = 0;
 			
 			var jumpSpeed = -20;
-			var gravity = 2;
-			var vy = 0;
+			var gravity = 0.3;
+			var friction = 0.8;
 			// Bounce Factor is the force with which
 			// the object should rebound. 1 means 100%
 			// 0.1 means 10%, so on ...
@@ -145,7 +165,7 @@
 			}
 
 			function handleKeyPress(evt) {
-				if(evt.keyCode == KEY_JUMP && collide(player, platform))
+				if(evt.keyCode == KEY_JUMP)
 					jump = true;
 			}
 			
@@ -222,46 +242,105 @@
 			//******PLAY******
 			function updatePlay() {
 				
-				//ground check
-				if (collide(player, platform)){ // Need to edit this
-					player.y = platform.y - 60;
-					vy = 0;
-				}
-				else
-					vy += gravity;
-
-				if (left)
-					player.x -= player.dx;
-				if (right)
-					player.x += player.dx;
 				if(jump) {
-					vy = jumpSpeed;
+					if (!player.jumping && player.grounded) {
+						player.jumping = true;
+						player.grounded = false;
+						player.velY = -player.speed * 2;
+					}
 					jump = false;
 				}
-				//Has to be after the collide check and jump check
-				player.y += vy;
+				
+				for (var i = 0; i < platforms.length; i++) {
+					ctx.rect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
+					
+					var dir = collide(player, platforms[i]);
 
-				if (player.x<0)
+					if (dir === "l" || dir === "r") {
+						player.velX = 0;
+						player.jumping = false;
+					} else if (dir === "b") {
+						player.y = platforms[i].y - 60;
+						player.grounded = true;
+						player.jumping = false;
+					} else if (dir === "t") {
+						player.velY *= -1;
+					}
+					
+					console.log(dir);
+				}
+				
+				if (left) {
+					if(player.velX > -player.speed)
+						player.velX--;
+				}
+				if (right) {
+					if(player.velX < player.speed)
+						player.velX++;
+				}
+				
+				player.velX *= friction;
+				player.velY += gravity;
+				
+				if(player.grounded) {
+					player.velY = 0;
+				}
+				
+				player.x += player.velX;
+				player.y += player.velY;
+
+				if (player.x<0) {
+					player.velX = 0;
 					player.x=0;
-				else if (player.x + player.w  >ctx.canvas.width)
+				}
+				else if (player.x + player.w  >ctx.canvas.width) {
 					player.x = ctx.canvas.width-player.w;
-				if (player.y < 0)
+					player.velX = 0;
+				}
+				if (player.y < 0) {
 					player.y=0;
-				else if (player.y + player.h > ctx.canvas.height)
+					player.velY = 0;
+				}
+				else if (player.y + player.h > ctx.canvas.height) {
 					player.y = ctx.canvas.height - player.h;
+					player.grounded = true;
+					player.velY = 0;
+				}
 			}
 				
 			function collide(player, platform) {
-				if(player.x> platform.x + platform.w)
-					return false;
-				if (player.y > platform.y + platform.h)
-						return false;
-				if (platform.x > player.x + player.w)
-					return false;
-				if (platform.y > player.y + player.h ) 
-					return false;
-					
-				return true;
+				// get the vectors to check against
+				var vX = (player.x + (player.w / 2)) - (platform.x + (platform.w / 2)),
+					vY = (player.y + (player.h / 2)) - (platform.y + (platform.h / 2)),
+					// add the half widths and half heights of the objects
+					hWidths = (player.w / 2) + (platform.w / 2),
+					hHeights = (player.h / 2) + (platform.h / 2),
+					colDir;
+
+				// if the x and y vector are less than the half width or half height, they we must be inside the object, causing a collision
+				if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+					// figures out on which side we are colliding (top, bottom, left, or right)
+					var oX = hWidths - Math.abs(vX),
+						oY = hHeights - Math.abs(vY);
+					if (oX >= oY) {
+						if (vY > 0) {
+							colDir = "t";
+							player.y += oY;
+						} else {
+							colDir = "b";
+							player.y -= oY;
+						}
+					} else {
+						if (vX > 0) {
+							colDir = "l";
+							player.x += oX;
+						} else {
+							colDir = "r";
+							player.x -= oX;
+						}
+					}
+				}
+				return colDir;
 			}
 			
 			var spriteLastTime = 0;
@@ -291,8 +370,15 @@
 				
 			function drawPlay(ctx) {
 				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+				
 				ctx.fillStyle = terrainPattern;
-				ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
+				ctx.beginPath();
+				
+				for (var i = 0; i < platforms.length; i++) {
+					ctx.rect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
+				}
+				ctx.fill();
+				//ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
 				if(left)
 					ctx.drawImage(resources.get('linkSheetRunLeft.png'), spriteX, spriteY, 120, 115, player.x, player.y, player.h, player.w);
 				else if(right)
