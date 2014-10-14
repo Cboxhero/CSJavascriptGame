@@ -250,10 +250,13 @@
 					}
 					jump = false;
 				}
+				player.x += player.velX;
+				player.y += player.velY;
 				
+				player.grounded = false;
 				for (var i = 0; i < platforms.length; i++) {
 					ctx.rect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
-					
+					//dir is in correlation to the player's rect
 					var dir = collide(player, platforms[i]);
 
 					if (dir === "l" || dir === "r") {
@@ -266,8 +269,6 @@
 					} else if (dir === "t") {
 						player.velY *= -1;
 					}
-					
-					console.log(dir);
 				}
 				
 				if (left) {
@@ -285,9 +286,6 @@
 				if(player.grounded) {
 					player.velY = 0;
 				}
-				
-				player.x += player.velX;
-				player.y += player.velY;
 
 				if (player.x<0) {
 					player.velX = 0;
@@ -318,12 +316,12 @@
 					colDir;
 
 				// if the x and y vector are less than the half width or half height, they we must be inside the object, causing a collision
-				if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+				if (Math.abs(vX) <= hWidths && Math.abs(vY) <= hHeights) {
 					// figures out on which side we are colliding (top, bottom, left, or right)
 					var oX = hWidths - Math.abs(vX),
 						oY = hHeights - Math.abs(vY);
 					if (oX >= oY) {
-						if (vY > 0) {
+						if (vY >= 0) {
 							colDir = "t";
 							player.y += oY;
 						} else {
@@ -331,7 +329,7 @@
 							player.y -= oY;
 						}
 					} else {
-						if (vX > 0) {
+						if (vX >= 0) {
 							colDir = "l";
 							player.x += oX;
 						} else {
