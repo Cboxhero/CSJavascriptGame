@@ -1,7 +1,7 @@
 CSJavascriptGame
 ================
 
-A simple game for Video Game Design
+A simple game for VideoGame Design
 
 The game is set in the 1590s.
 You are a fat link. You must destroy all the sassy trees and murder the evil MechaMitchell.
@@ -11,5 +11,8 @@ Controls:
 	- Space to jump
 	- Left click to chop (Not implemented yet)
 	- W to move through end level door (Not implemented yet)
+<<<<<<< HEAD
 	
 test
+=======
+>>>>>>> 79f0d0c93f1f23e92a55b63ac597aa16d5e81453
