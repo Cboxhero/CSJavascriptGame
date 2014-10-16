@@ -16,7 +16,7 @@
 			var left = false, right = false, up = false, down = false, jump = false;
 			
 			
-			var player = { x: 50, y: 75, w: 60 , h: 60, velX: 0, velY: 0, speed: 5, jumping: false, grounded: false};
+			var player = { x: canvas.width / 2, y: 75, w: 60 , h: 60, velX: 0, velY: 0, speed: 5, jumping: false, grounded: false};
 			
 			var platform = { x: 0, y: 550, w: 800, h: 50 };
 			var platforms = [];
@@ -250,10 +250,16 @@
 					}
 					jump = false;
 				}
-				player.x += player.velX;
+
+				for(var i = 0; i < platforms.length; i++) {
+					platforms[i].x -= player.velX;
+				}
 				player.y += player.velY;
 				
 				player.grounded = false;
+
+				var colLeft = false;
+				var colRight = false;
 				for (var i = 0; i < platforms.length; i++) {
 					ctx.rect(platforms[i].x, platforms[i].y, platforms[i].w, platforms[i].h);
 					//dir is in correlation to the player's rect
@@ -262,6 +268,10 @@
 					if (dir === "l" || dir === "r") {
 						player.velX = 0;
 						player.jumping = false;
+						if(dir === "l")
+							colLeft = true;
+						if(dir === "r")
+							colRight = true;
 					} else if (dir === "b") {
 						player.y = platforms[i].y - 60;
 						player.grounded = true;
@@ -269,13 +279,16 @@
 					} else if (dir === "t") {
 						player.velY *= -1;
 					}
+
+					console.log(dir);
 				}
 				
-				if (left) {
+
+				if (left && !colLeft) {
 					if(player.velX > -player.speed)
 						player.velX--;
 				}
-				if (right) {
+				if (right && !colRight) {
 					if(player.velX < player.speed)
 						player.velX++;
 				}
@@ -329,7 +342,7 @@
 							player.y -= oY;
 						}
 					} else {
-						if (vX >= 0) {
+						if (vX > 0) {
 							colDir = "l";
 							player.x += oX;
 						} else {
