@@ -18,9 +18,6 @@
 			
 			var player = { x: canvas.width / 2, y: 75, w: 60 , h: 60, velX: 0, velY: 0, speed: 5, jumping: false, grounded: false};
 			
-			var enemy = { x: 450, y: 330, w: 70, h: 120}; 
-			
-			var platform = { x: 0, y: 550, w: 800, h: 50 };
 			var platforms = [];
 			
 			//No platform shall be wider than 800 pixels
@@ -43,11 +40,10 @@
 				h: 50
 			});
 			
+			//Trees are 91 by 120
 			var enemy = {
 				x: 500,
-				y: 375,
-				w: 30,
-				h: 75
+				y: 330,
 			};
 
 			var count = 0;
@@ -276,11 +272,11 @@
 				for (var i = 0; i < platforms.length; i++) {
 					//dir is in correlation to the player's rect
 					var inScreen = false;
-					if(platform.x + platform.w <= 800)
+					if(platforms[i].x + platforms[i].w <= 800)
 						inScreen = true;
 					
 					
-					if(platform.x >= 0 || inScreen) {
+					if(platforms[i].x >= 0 || inScreen) {
 						var dir = collide(player, platforms[i]);
 
 						if (dir === "l" || dir === "r") {
@@ -411,8 +407,8 @@
 				}
 				ctx.fill();
 				
-				ctx.fillStyle = "#000000";
-				ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+				
+				ctx.drawImage(resources.get('TreeEnemy.png'), enemy.x, enemy.y);
 				
 				if(left)
 					ctx.drawImage(resources.get('linkSheetRunLeft.png'), spriteX, spriteY, 120, 115, player.x, player.y, player.h, player.w);
@@ -466,7 +462,8 @@
 				'linkSheetRunLeft.png',
 				'linkSheetRunRight.png',
 				'basic_ground.png',
-				'MainMenuBG.png'
+				'MainMenuBG.png',
+				'TreeEnemy.png'
 			]);
 			resources.onReady(main);
 		</script>
